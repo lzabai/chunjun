@@ -170,7 +170,8 @@ public class JdbcUtil {
         ResultSet rs = dbConn.getMetaData().getIndexInfo(null, schema, tableName, true, false);
         List<String> indexList = new LinkedList<>();
         while (rs.next()) {
-            indexList.add(rs.getString(9));
+            String index = rs.getString(9);
+            if (StringUtils.isNotBlank(index)) indexList.add(index);
         }
         return indexList;
     }
@@ -382,6 +383,24 @@ public class JdbcUtil {
         properties.putIfAbsent("useCursorFetch", "true");
         properties.putIfAbsent("rewriteBatchedStatements", "true");
         jdbcConf.setProperties(properties);
+    }
+
+    /**
+     * Add additional parameters to jdbc properties，
+     *
+     * @param jdbcConf jdbc datasource configuration
+     * @param extraProperties default customConfiguration
+     * @return
+     */
+    public static void putExtParam(JdbcConf jdbcConf, Properties extraProperties) {
+        Properties properties = jdbcConf.getProperties();
+        if (properties == null) {
+            properties = new Properties();
+        }
+        Properties finalProperties = properties;
+        extraProperties.forEach(finalProperties::putIfAbsent);
+
+        jdbcConf.setProperties(finalProperties);
     }
 
     /**
